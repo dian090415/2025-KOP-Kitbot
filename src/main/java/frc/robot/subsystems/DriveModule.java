@@ -1,0 +1,47 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.DeviceId;
+
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+public class DriveModule {
+    private final SparkMax motor;
+    private final RelativeEncoder encoder;
+
+    public DriveModule(int frontport, boolean frontreverse) {
+        this.motor = new SparkMax(frontport, MotorType.kBrushless);
+        SparkMaxConfig frontconfig = new SparkMaxConfig();
+        frontconfig
+                .inverted(frontreverse)
+                .idleMode(IdleMode.kBrake);
+        this.motor.configure(frontconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        this.encoder = this.motor.getEncoder();
+
+    }
+
+    public void stop() {
+        this.motor.stopMotor();
+    }
+
+    public double getPosition() {
+        return this.motor.getEncoder().getPosition();
+    }
+
+    public double getVelocity() {
+        return this.motor.getEncoder().getVelocity();
+    }
+
+    public void setVoltage(double speed) {
+        this.motor.setVoltage(speed);
+    }
+}
