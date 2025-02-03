@@ -31,13 +31,25 @@ import frc.robot.Constants.MotorReverse;
 import frc.robot.DeviceId.DriveMotor;
 
 public class DriveSubsystem extends SubsystemBase {
-    private final DriveModule frontLeft;
-    private final DriveModule frontRight;
-    private final DriveModule backLeft;
-    private final DriveModule backRight;
+    private final DriveModule Left;
+    private final DriveModule Right;
 
-    // private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
-    // private final PoseEstimator poseEstimator = new PoseEstimator<>(null, null, null, null);
+
+    private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
+    // 機器人運動學
+private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(20)); // 設定左右輪間距
+
+// 機器人位置估算器
+private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(
+    kinematics,
+    gyro.getRotation2d(),        // 起始角度 (來自 NavX)
+    this.leftEncoder(),         // 左編碼器位置 (初始值)
+    rightEncoderPosition,        // 右編碼器位置 (初始值)
+    new Pose2d(),                // 初始位置
+    VecBuilder.fill(0.1, 0.1, 0.1), // 狀態估計的標準差 (x, y, theta)
+    VecBuilder.fill(0.05),          // 本地量測的標準差 (encoder)
+    VecBuilder.fill(0.1)            // 全域量測的標準差 (vision, lidar)
+);
 
     private final PIDController xController = new PIDController(10.0, 0.0, 0.0);
     private final PIDController yController = new PIDController(10.0, 0.0, 0.0);
@@ -52,11 +64,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final double KOP_WHITE_WHEEL = 0.0762;
 
     public DriveSubsystem() {
-        this.frontLeft = new DriveModule(DriveMotor.FRONT_LEFT, MotorReverse.FRONT_LEFT);
-        this.frontRight = new DriveModule(DriveMotor.FRONT_RIGHT, MotorReverse.FRONT_RIGHT);
-        this.backLeft = new DriveModule(DriveMotor.BACK_LEFT, MotorReverse.BACK_LEFT);
-        this.backRight = new DriveModule(DriveMotor.BACK_RIGHT, MotorReverse.BACK_RIGHT);
-
+        this.Left = new DriveModule(DriveMotor.FRONT_LEFT, MotorReverse.FRONT_LEFT,DriveMotor.BACK_LEFT, MotorReverse.BACK_LEFT);
+        this.Right = new DriveModule(DriveMotor.FRONT_RIGHT, MotorReverse.FRONT_RIGHT,DriveMotor.BACK_RIGHT, MotorReverse.BACK_RIGHT);
         // headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     // }
@@ -90,26 +99,24 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public double getLeftSpeed() {
-        return this.backLeft.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI;
+        return this.Left.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI;
     }
 
     public double getRightSpeed() {
-        return this.backRight.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI;
+        return this.Right.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI;
     }
 
     public double leftEncoder() {
-        return (this.backLeft.getVelocity() + this.frontLeft.getVelocity()) / 2;
+        return (this.Left.getVelocity() + this.Left.getVelocity()) / 2;
     }
 
     public double rightEncoder() {
-        return (this.backRight.getVelocity()) + this.frontRight.getVelocity() / 2;
+        return (this.Right.getVelocity()) + this.Right.getVelocity() / 2;
     }
 
     public void stopModules() {
-        this.frontLeft.stop();
-        this.frontRight.stop();
-        this.backLeft.stop();
-        this.backRight.stop();
+        this.Left.stop();
+        this.Right.stop();
     }
 
     public void execute(double leftSetpoint, double rightSetpoint) {
@@ -134,10 +141,8 @@ public class DriveSubsystem extends SubsystemBase {
         rightVoltage = MathUtil.clamp(rightVoltage, -12.0, 12.0);
 
         // 設定馬達電壓
-        this.backLeft.setVoltage(leftVoltage);
-        this.frontLeft.setVoltage(leftVoltage);
-        this.backRight.setVoltage(rightVoltage);
-        this.frontRight.setVoltage(rightVoltage);
+        this.Left.setVoltage(leftVoltage);
+        this.Right.setVoltage(rightVoltage);
 
         SmartDashboard.putNumber("leftVelocity", leftVelocity);
         SmartDashboard.putNumber("rightVelocityy", rightVelocity);

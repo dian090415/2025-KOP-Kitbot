@@ -16,17 +16,25 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 public class DriveModule {
     private final SparkMax motor;
+    private final SparkMax followmotor;
     private final RelativeEncoder encoder;
 
-    public DriveModule(int frontport, boolean frontreverse) {
-        this.motor = new SparkMax(frontport, MotorType.kBrushless);
-        SparkMaxConfig frontconfig = new SparkMaxConfig();
-        frontconfig
-                .inverted(frontreverse)
+    public DriveModule(int port, boolean reverse, int followport, boolean followreverse) {
+        this.motor = new SparkMax(port, MotorType.kBrushless);
+        SparkMaxConfig config = new SparkMaxConfig();
+        config
+                .inverted(reverse)
                 .idleMode(IdleMode.kBrake);
-        this.motor.configure(frontconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        this.motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         this.encoder = this.motor.getEncoder();
 
+        this.followmotor = new SparkMax(followport, MotorType.kBrushless);
+        SparkMaxConfig followConfig = new SparkMaxConfig();
+        followConfig
+                .inverted(followreverse)
+                .idleMode(IdleMode.kBrake)
+                .follow(motor);
+        this.followmotor.configure(followConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void stop() {
