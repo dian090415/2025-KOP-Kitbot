@@ -1,12 +1,10 @@
 package frc.robot;
 
-import com.fasterxml.jackson.databind.introspect.DefaultAccessorNamingStrategy.RecordNaming;
-
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class Drive extends XboxController {
-    public Drive() {
+public class Driver extends XboxController {
+    public Driver() {
         super(0);
     }
     public Trigger Putter(){

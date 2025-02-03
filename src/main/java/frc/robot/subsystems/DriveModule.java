@@ -42,11 +42,11 @@ public class DriveModule {
     }
 
     public double getPosition() {
-        return this.motor.getEncoder().getPosition();
+        return this.encoder.getPosition();
     }
 
     public double getVelocity() {
-        return this.motor.getEncoder().getVelocity();
+        return this.encoder.getVelocity();
     }
 
     public void setVoltage(double speed) {
