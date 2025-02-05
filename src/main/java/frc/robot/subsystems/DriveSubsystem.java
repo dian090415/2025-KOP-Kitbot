@@ -31,23 +31,26 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.Drive;
 import frc.robot.Constants.MotorReverse;
 import frc.robot.DeviceId.DriveMotor;
 
 public class DriveSubsystem extends SubsystemBase {
-    private final DriveModule Left = new DriveModule(DriveMotor.FRONT_LEFT, MotorReverse.FRONT_LEFT, DriveMotor.BACK_LEFT, MotorReverse.BACK_LEFT);
-    private final DriveModule Right = new DriveModule(DriveMotor.FRONT_RIGHT, MotorReverse.FRONT_RIGHT, DriveMotor.BACK_RIGHT, MotorReverse.BACK_RIGHT);
+    private final DriveModule Left = new DriveModule(DriveMotor.FRONT_LEFT, MotorReverse.FRONT_LEFT,
+            DriveMotor.BACK_LEFT, MotorReverse.BACK_LEFT);
+    private final DriveModule Right = new DriveModule(DriveMotor.FRONT_RIGHT, MotorReverse.FRONT_RIGHT,
+            DriveMotor.BACK_RIGHT, MotorReverse.BACK_RIGHT);
 
     private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
     // 機器人運動學
-    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.metersToInches(56.8)); // 設定左右輪間距
+    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.metersToInches(0.568)); // 設定左右輪間距
 
     // 機器人位置估算器
     private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics,
             this.gyro.getRotation2d(), getLeftSpeed(), getRightSpeed(), new Pose2d());
 
-    private final PIDController xController = new PIDController(10.0, 0.0, 0.0);
-    private final PIDController yController = new PIDController(10.0, 0.0, 0.0);
+    private final PIDController xController = new PIDController(10, 0.0, 0.0);
+    private final PIDController yController = new PIDController(10, 0.0, 0.0);
     private final PIDController headingController = new PIDController(7.5, 0.0, 0.0);
 
     private final PIDController leftPIDController = new PIDController(0.01, 0.0, 0.0);
@@ -59,60 +62,47 @@ public class DriveSubsystem extends SubsystemBase {
     private final double KOP_WHITE_WHEEL = 0.0762;
 
     public DriveSubsystem() {
-        headingController.enableContinuousInput(-Math.PI, Math.PI);
+        this.headingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     public void resetPose(Pose2d pose) {
-        poseEstimator.resetPosition(gyro.getRotation2d(), getLeftSpeed(), getRightSpeed(), pose);
+        this.poseEstimator.resetPosition(gyro.getRotation2d(), getLeftSpeed(), getRightSpeed(), pose);
     }
 
     public void resetOdometry(Pose2d pose) {
-        poseEstimator.resetPosition(pose.getRotation(), getLeftVelocity(), getRightVelocity(), pose);
+        this.poseEstimator.resetPosition(pose.getRotation(), getLeftVelocity(), getRightVelocity(), pose);
     }
 
     public Pose2d getPose() {
-        return poseEstimator.getEstimatedPosition();
-    }
-
-    public void driveFieldRelative(ChassisSpeeds speeds) {
-        // 使用 Gyro 來轉換速度，使機器人能夠場地相對移動
-        ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                speeds.vxMetersPerSecond,
-                speeds.vyMetersPerSecond, // 坦克驅動不會用到 Y 軸速度
-                speeds.omegaRadiansPerSecond,
-                gyro.getRotation2d());
-
-        // 傳給下一層處理
-        driveRobotRelative(robotRelativeSpeeds);
-    }
-
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        // 透過 Kinematics 計算左右輪速率
-        var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
-
-        double leftSpeed = wheelSpeeds.leftMetersPerSecond;
-        double rightSpeed = wheelSpeeds.rightMetersPerSecond;
-
-        // 呼叫馬達控制函式
-        execute(leftSpeed, rightSpeed);
-    }
-
-    public void updatePose() {
-        this.poseEstimator.update(this.gyro.getRotation2d(), this.getLeftVelocity(), this.getRightVelocity());
+        SmartDashboard.putString("pose", this.poseEstimator.getEstimatedPosition().toString());
+        return this.poseEstimator.getEstimatedPosition();
     }
 
     public void followTrajectory(DifferentialSample sample) {
-        // 取得當前機器人位置
+        // 獲取當前機器人位置
         Pose2d pose = getPose();
+    
+        // 計算左右輪速度
+        double leftSpeed = sample.vl + xController.calculate(pose.getX(), sample.x);
+        double rightSpeed = sample.vr + headingController.calculate(pose.getRotation().getRadians(), sample.heading);
+    
+        // 設定左右輪速度
+        autoexecute(leftSpeed, rightSpeed);
+    }
 
-        // 使用 PID 控制器計算速度
-        double velocity = sample.omega + xController.calculate(pose.getX(), sample.x);
-        double omega = sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading);
+    // public void driveFieldRelative(ChassisSpeeds speeds) {
+    //     // 使用運動學模型來計算左右輪的速度
+    //     var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
 
-        // KOP 不支援 Y 軸移動，所以只設定 X 速度和角速度
-        ChassisSpeeds speeds = new ChassisSpeeds(velocity, 0.0, omega);
+    //     double leftSpeed = wheelSpeeds.leftMetersPerSecond;
+    //     double rightSpeed = wheelSpeeds.rightMetersPerSecond;
 
-        driveRobotRelative(speeds);
+    //     // 呼叫馬達控制函式，將計算出來的左右輪速度轉換為馬達輸入
+    //     autoexecute(leftSpeed, rightSpeed);
+    // }
+
+    public void updatePose() {
+        this.poseEstimator.update(this.gyro.getRotation2d(), this.getLeftVelocity(), this.getRightVelocity());
     }
 
     public void updateTime() {
@@ -121,11 +111,11 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public double getLeftSpeed() {
-        return this.Left.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI * nowTime;
+        return this.Left.getVelocity() / 60 * (1 / 10.71) * (KOP_WHITE_WHEEL * Math.PI * 2) * nowTime;
     }
 
     public double getRightSpeed() {
-        return this.Right.getVelocity() / 60 / 13.5 * KOP_WHITE_WHEEL * 2 * Math.PI * nowTime;
+        return this.Right.getVelocity() / 60 * (1 / 10.71) * (KOP_WHITE_WHEEL * Math.PI * 2) * nowTime;
     }
 
     public double getLeftVelocity() {
@@ -149,20 +139,18 @@ public class DriveSubsystem extends SubsystemBase {
         this.Right.stop();
     }
 
-    
-
     public void execute(double leftSetpoint, double rightSetpoint) {
         // 獲取當前速度（以距離的變化率計算）
         double leftVelocity = this.getLeftSpeed();
         double rightVelocity = this.getRightSpeed();
 
         // PID 輸出
-        double leftPIDOutput = leftPIDController.calculate(leftVelocity, leftSetpoint);
-        double rightPIDOutput = rightPIDController.calculate(rightVelocity, rightSetpoint);
+        double leftPIDOutput = this.leftPIDController.calculate(leftVelocity, leftSetpoint);
+        double rightPIDOutput = this.rightPIDController.calculate(rightVelocity, rightSetpoint);
 
         // 前饋補償
-        double leftFeedforward = feedforward.calculate(leftSetpoint);
-        double rightFeedforward = feedforward.calculate(rightSetpoint);
+        double leftFeedforward = this.feedforward.calculate(leftSetpoint);
+        double rightFeedforward = this.feedforward.calculate(rightSetpoint);
 
         // 合成電壓輸出
         double leftVoltage = leftPIDOutput + leftFeedforward;
@@ -176,16 +164,36 @@ public class DriveSubsystem extends SubsystemBase {
         this.Left.setVoltage(leftVoltage);
         this.Right.setVoltage(rightVoltage);
 
+        this.getPose();
+
         SmartDashboard.putNumber("leftVelocity", leftVelocity);
         SmartDashboard.putNumber("rightVelocityy", rightVelocity);
         SmartDashboard.putNumber("leftSetpoint", leftSetpoint);
         SmartDashboard.putNumber("rightSetpoin", rightSetpoint);
+        SmartDashboard.putNumber("RightWheelPosition", this.Right.getVelocity());
+        SmartDashboard.putNumber("LeftWheelPositio", this.Left.getVelocity());
+    }
+
+    public void autoexecute(double leftSetpoint, double rightSetpoint) {
+
+        double leftFeedforward = this.feedforward.calculate(leftSetpoint);
+        double rightFeedforward = this.feedforward.calculate(rightSetpoint);
+
+        double leftVoltage = MathUtil.clamp(leftFeedforward, -6.0, 6.0);
+        double rightVoltage = MathUtil.clamp(rightFeedforward, -6.0, 6.0);
+
+        this.Left.setVoltage(-leftVoltage);
+        this.Right.setVoltage(-rightVoltage);
+
+        SmartDashboard.putNumber("autoleftspeed", leftVoltage);
+        SmartDashboard.putNumber("autorightSpeed", rightVoltage);
     }
 
     @Override
     public void periodic() {
         this.updatePose();
         this.updateTime();
-        this.poseEstimator.update(this.gyro.getRotation2d(), new DifferentialDriveWheelPositions(this.getLeftWheelPosition(), this.getRightWheelPosition()));
+        this.poseEstimator.update(this.gyro.getRotation2d(),
+                new DifferentialDriveWheelPositions(this.getLeftWheelPosition(), this.getRightWheelPosition()));
     }
 }

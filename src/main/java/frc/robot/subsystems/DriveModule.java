@@ -52,4 +52,7 @@ public class DriveModule {
     public void setVoltage(double speed) {
         this.motor.setVoltage(speed);
     }
+    public void set(double speed) {
+        this.motor.set(speed);
+    }
 }

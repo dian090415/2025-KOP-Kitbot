@@ -3,7 +3,7 @@ package frc.robot;
 public class Constants {
 	public static final class Drive {
 		public static final double MAX_SPEED = 2;
-		public static final double MAX_TURN_SPEED = 1;
+		public static final double MAX_TURN_SPEED = 1.3;
 		public static final double DEAD_BAND = 0.05;
 		public static final double MAX_DRIVE_SPEED = 0.5;
 		public static final double MOTOR_SPEED = 2;

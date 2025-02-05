@@ -20,18 +20,18 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
   private final Optional<Trajectory<DifferentialSample>> trajectory = Choreo.loadTrajectory("kop");
-  private final AutoFactory autoFactory;
+  // private final AutoFactory autoFactory;
 
   private final Timer timer = new Timer();
-  public Robot(){
-    autoFactory = new AutoFactory(
-      this.m_robotContainer.driveSubsystem::getPose, // A function that returns the current robot pose
-      this.m_robotContainer.driveSubsystem::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
-      this.m_robotContainer.driveSubsystem::followTrajectory, // The drive subsystem trajectory follower 
-      true, // If alliance flipping should be enabled 
-      this.m_robotContainer.driveSubsystem // The drive subsystem
-  );
-  }
+  // public Robot(){
+  //   autoFactory = new AutoFactory(
+  //     this.m_robotContainer.driveSubsystem::getPose, // A function that returns the current robot pose
+  //     this.m_robotContainer.driveSubsystem::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
+  //     this.m_robotContainer.driveSubsystem::followTrajectory, // The drive subsystem trajectory follower 
+  //     true, // If alliance flipping should be enabled 
+  //     this.m_robotContainer.driveSubsystem // The drive subsystem
+  // );
+  // }
 
   @Override
   public void robotInit() {
