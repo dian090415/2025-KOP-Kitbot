@@ -23,7 +23,7 @@ public class PutterSubsystems extends SubsystemBase {
         SparkMaxConfig config = new SparkMaxConfig();
         config
                 .inverted(true)
-                .idleMode(IdleMode.kBrake);
+                .idleMode(IdleMode.kCoast);
         this.motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
     public void execute(){

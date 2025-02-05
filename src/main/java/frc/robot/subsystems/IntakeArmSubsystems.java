@@ -30,7 +30,7 @@ public class IntakeArmSubsystems extends SubsystemBase {
     private final double MAX_DEGREE = 0.368803809220095;
 
     public IntakeArmSubsystems() {
-        this.motor = new SparkMax(DeviceId.controller.PutterSubsytems, MotorType.kBrushless);
+        this.motor = new SparkMax(DeviceId.controller.intakearmSubsytems, MotorType.kBrushless);
         SparkMaxConfig config = new SparkMaxConfig();
         config
                 .inverted(true)
@@ -40,15 +40,16 @@ public class IntakeArmSubsystems extends SubsystemBase {
     }
 
     public void execute(double speed) {
-        if (this.encoder.get() >= this.MIN_DEGREE && this.encoder.get() <= this.MAX_DEGREE) {
-            this.motor.set(speed);
-        } else if (this.encoder.get() > this.MAX_DEGREE && speed >= 0.0) {
-            this.motor.set(speed);
-        } else if (this.encoder.get() < this.MIN_DEGREE && speed <= 0.0) {
-            this.motor.set(speed);
-        } else {
-            this.motor.set(0);
-        }
+        // if (this.encoder.get() >= this.MIN_DEGREE && this.encoder.get() <= this.MAX_DEGREE) {
+        //     this.motor.set(speed);
+        // } else if (this.encoder.get() > this.MAX_DEGREE && speed >= 0.0) {
+        //     this.motor.set(speed);
+        // } else if (this.encoder.get() < this.MIN_DEGREE && speed <= 0.0) {
+        //     this.motor.set(speed);
+        // } else {
+        //     this.motor.set(0);
+        // }
+        this.motor.set(speed);
     }
 
     public void stop() {

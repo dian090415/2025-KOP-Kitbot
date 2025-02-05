@@ -21,7 +21,7 @@ public class IntakeSubsystems extends SubsystemBase {
     private final SparkMax motor;
 
     public IntakeSubsystems() {
-        this.motor = new SparkMax(DeviceId.controller.PutterSubsytems, MotorType.kBrushless);
+        this.motor = new SparkMax(DeviceId.controller.intakeSubsytems, MotorType.kBrushless);
         SparkMaxConfig config = new SparkMaxConfig();
         config
                 .inverted(true)

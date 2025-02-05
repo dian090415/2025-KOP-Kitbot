@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.security.PublicKey;
+
 public class DeviceId {
     public static final class DriveMotor {
         public static final int FRONT_LEFT = 1;
@@ -9,5 +11,7 @@ public class DeviceId {
     }
     public static final class controller {
         public static final int PutterSubsytems = 5;
+        public static final int intakearmSubsytems = 6;
+        public static final int intakeSubsytems = 7;
     }
 }

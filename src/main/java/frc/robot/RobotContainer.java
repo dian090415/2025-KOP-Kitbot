@@ -12,11 +12,14 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Controller;
 import frc.robot.commands.DriveCmd;
+import frc.robot.commands.IntakeArmCmd;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystems;
 import frc.robot.subsystems.IntakeSubsystems;
 import frc.robot.subsystems.PutterSubsystems;
+
 import java.util.Optional;
 
 import choreo.auto.AutoFactory;
@@ -27,6 +30,7 @@ import choreo.trajectory.Trajectory;
 public class RobotContainer {
 
     private final Driver driver = new Driver();
+    private final Controller controller = new Controller();
 
     public final DriveSubsystem driveSubsystem = new DriveSubsystem();
     private final PutterSubsystems putterSubsytems = new PutterSubsystems();
@@ -38,29 +42,31 @@ public class RobotContainer {
     private final Optional<Trajectory<DifferentialSample>> trajectory = Choreo.loadTrajectory("kop");
 
     private final DriveCmd driveJoystickCmd = new DriveCmd(driveSubsystem, driver);
+    private final IntakeArmCmd IntakeArmCmd = new IntakeArmCmd(intakeArmSubsystems, controller);
 
     public RobotContainer() {
         this.driveSubsystem.setDefaultCommand(this.driveJoystickCmd);
+        this.intakeArmSubsystems.setDefaultCommand(this.IntakeArmCmd);
         this.configBindings();
     }
 
     public void configBindings() {
-        this.driver.Putter()
+        this.controller.Putter()
                 .whileTrue(this.putterSubsytems.cmdExecute());
 
-        this.driver.PutterCorrection()
+        this.controller.PutterCorrection()
                 .whileTrue(this.putterSubsytems.cmdExecuteCorrection());
 
-        this.driver.Intake()
+        this.controller.Intake()
                 .whileTrue(this.intakeSubsystems.Cmdexecute());
 
-        this.driver.IntakelifeUp()
+        this.controller.IntakelifeUp()
                 .onTrue(this.intakeArmSubsystems.autoUp());
 
-        this.driver.IntakeLifeDown()
+        this.controller.IntakeLifeDown()
                 .onTrue(this.intakeArmSubsystems.autodown());
 
-        this.driver.AutoIntake()
+        this.controller.AutoIntake()
                 .onTrue(Commands
                         .runOnce(this.intakeArmSubsystems::autodown,
                                 this.intakeArmSubsystems)
