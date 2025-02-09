@@ -24,7 +24,7 @@ public class IntakeSubsystems extends SubsystemBase {
         this.motor = new SparkMax(DeviceId.controller.intakeSubsytems, MotorType.kBrushless);
         SparkMaxConfig config = new SparkMaxConfig();
         config
-                .inverted(true)
+                .inverted(false)
                 .idleMode(IdleMode.kBrake);
         this.motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
@@ -34,7 +34,7 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     public void executeback() {
-        this.motor.set(-0.15);
+        this.motor.set(-0.3);
     }
 
     public Command Cmdexecute() {
@@ -42,12 +42,10 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     public Command autoCmdexecute() {
-        return new ParallelRaceGroup(
-                Commands.runEnd(this::execute, this::stop, this),
-                new WaitCommand(3));
+        return Commands.runEnd(this::execute, this::stop, this);
     }
     public Command Cmdbackexecute(){
-       return Commands.runEnd(this::executeback, this::stop, this);
+       return Commands.runEnd(this::executeback,this::stop,this);
     }
     public void stop() {
         this.motor.stopMotor();

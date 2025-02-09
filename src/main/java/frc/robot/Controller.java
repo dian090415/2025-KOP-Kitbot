@@ -7,22 +7,27 @@ public class Controller extends XboxController {
     public Controller() {
         super(1);
     }
-    public Trigger Putter(){
+
+    public Trigger Putter() {
         return new Trigger(this::getXButton);
     }
-    public Trigger PutterCorrection(){
+    public Trigger PutterCorrection() {
+        return new Trigger(this::getYButton);
+    }
+
+    public Trigger IntakeLifeDown() {
         return new Trigger(this::getLeftBumperButton);
     }
-    public Trigger IntakeLifeDown(){
-        return new Trigger(this::getLeftBumperButton);
-    }
-    public Trigger IntakelifeUp(){
+
+    public Trigger IntakelifeUp() {
         return new Trigger(this::getRightBumperButton);
     }
-    public Trigger Intake(){
+
+    public Trigger Intake() {
         return new Trigger(this::getBButton);
     }
-    public Trigger AutoIntake(){
+
+    public Trigger AutoIntake() {
         return new Trigger(this::getAButton);
     }
 }

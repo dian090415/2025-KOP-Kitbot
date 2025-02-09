@@ -29,96 +29,83 @@ import choreo.trajectory.Trajectory;
 
 public class RobotContainer {
 
-    private final Driver driver = new Driver();
-    private final Controller controller = new Controller();
+        private final Driver driver = new Driver();
+        private final Controller controller = new Controller();
 
-    public final DriveSubsystem driveSubsystem = new DriveSubsystem();
-    private final PutterSubsystems putterSubsytems = new PutterSubsystems();
-    private final IntakeArmSubsystems intakeArmSubsystems = new IntakeArmSubsystems();
-    private final IntakeSubsystems intakeSubsystems = new IntakeSubsystems();
+        public final DriveSubsystem driveSubsystem = new DriveSubsystem();
+        private final PutterSubsystems putterSubsytems = new PutterSubsystems();
+        private final IntakeArmSubsystems intakeArmSubsystems = new IntakeArmSubsystems();
+        private final IntakeSubsystems intakeSubsystems = new IntakeSubsystems();
 
-    private final Timer timer = new Timer();
+        private final Optional<Trajectory<DifferentialSample>> trajectory = Choreo.loadTrajectory("kop");
 
-    private final Optional<Trajectory<DifferentialSample>> trajectory = Choreo.loadTrajectory("kop");
+        private final DriveCmd driveJoystickCmd = new DriveCmd(driveSubsystem, driver);
+        private final IntakeArmCmd IntakeArmCmd = new IntakeArmCmd(intakeArmSubsystems, controller);
 
-    private final DriveCmd driveJoystickCmd = new DriveCmd(driveSubsystem, driver);
-    private final IntakeArmCmd IntakeArmCmd = new IntakeArmCmd(intakeArmSubsystems, controller);
+        public RobotContainer() {
+                this.driveSubsystem.setDefaultCommand(this.driveJoystickCmd);
+                this.intakeArmSubsystems.setDefaultCommand(this.IntakeArmCmd);
+                this.configBindings();
+        }
 
-    public RobotContainer() {
-        this.driveSubsystem.setDefaultCommand(this.driveJoystickCmd);
-        this.intakeArmSubsystems.setDefaultCommand(this.IntakeArmCmd);
-        this.configBindings();
-    }
+        public void configBindings() {
+                this.controller.Putter()
+                                .whileTrue(this.putterSubsytems.cmdExecute());
 
-    public void configBindings() {
-        this.controller.Putter()
-                .whileTrue(this.putterSubsytems.cmdExecute());
+                this.controller.PutterCorrection()
+                                .whileTrue(this.putterSubsytems.cmdExecuteCorrection());
 
-        this.controller.PutterCorrection()
-                .whileTrue(this.putterSubsytems.cmdExecuteCorrection());
+                this.controller.IntakelifeUp()
+                                .onTrue(this.intakeArmSubsystems.keep()
+                                                .alongWith(this.intakeSubsystems.Cmdbackexecute()))
+                                .onFalse(this.intakeArmSubsystems.Up());
+                this.controller.IntakeLifeDown()
+                                .onTrue(this.intakeArmSubsystems.down()
+                                                .alongWith(this.intakeSubsystems.Cmdexecute()))
+                                .onFalse(this.intakeArmSubsystems.keep());
+        }
 
-        this.controller.Intake()
-                .whileTrue(this.intakeSubsystems.Cmdexecute());
-
-        this.controller.IntakelifeUp()
-                .onTrue(this.intakeArmSubsystems.autoUp());
-
-        this.controller.IntakeLifeDown()
-                .onTrue(this.intakeArmSubsystems.autodown());
-
-        this.controller.AutoIntake()
-                .onTrue(Commands
-                        .runOnce(this.intakeArmSubsystems::autodown,
-                                this.intakeArmSubsystems)
-                        .andThen(this.intakeSubsystems.autoCmdexecute()))
-                .onFalse(new ParallelRaceGroup(
-                        Commands.runEnd(this.intakeSubsystems::Cmdbackexecute, this.intakeSubsystems::stop,
-                                this.intakeSubsystems),
-                        new WaitCommand(1.5))
-                        .andThen(Commands.runOnce(this.intakeArmSubsystems::autoUp, this.intakeArmSubsystems)));
-    }
-
-    public Command getAutonomousCommand() {
-        return null;
-    }
-    // return new SequentialCommandGroup(
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(5, 5),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(1)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(-1, -1),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(0.2)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(this.putterSubsytems::execute,this.putterSubsytems::stop,this.putterSubsytems),
-    // new WaitCommand(0.3)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(12, 48),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(1.5)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(-5,-5),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(0.5)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(-5, -5),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(1)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(()->this.driveSubsystem.execute(1, 1),
-    // this.driveSubsystem::stopModules, this.driveSubsystem),
-    // new WaitCommand(0.2)
-    // ),
-    // new ParallelRaceGroup(
-    // Commands.runEnd(this.putterSubsytems::execute,this.putterSubsytems::stop,this.putterSubsytems),
-    // new WaitCommand(2)
-    // )
-    // );
+        public Command getAutonomousCommand() {
+                return null;
+        }
+        // return new SequentialCommandGroup(
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(5, 5),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(1)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(-1, -1),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(0.2)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(this.putterSubsytems::execute,this.putterSubsytems::stop,this.putterSubsytems),
+        // new WaitCommand(0.3)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(12, 48),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(1.5)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(-5,-5),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(0.5)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(-5, -5),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(1)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(()->this.driveSubsystem.execute(1, 1),
+        // this.driveSubsystem::stopModules, this.driveSubsystem),
+        // new WaitCommand(0.2)
+        // ),
+        // new ParallelRaceGroup(
+        // Commands.runEnd(this.putterSubsytems::execute,this.putterSubsytems::stop,this.putterSubsytems),
+        // new WaitCommand(2)
+        // )
+        // );
 }
