@@ -24,7 +24,7 @@ public class IntakeArmSubsystems extends SubsystemBase {
     private final SparkMax motor;
 
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(0);
-    private final PIDController lifterPid = new PIDController(0.01, 0, 0); // TODO
+    private final PIDController lifterPid = new PIDController(0.01, 0, 0); //TODO
 
     private final double MIN_DEGREE = -0.388300284707507;
     private final double MAX_DEGREE = 0.368803809220095;
