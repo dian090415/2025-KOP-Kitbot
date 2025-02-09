@@ -39,7 +39,7 @@ public class RobotContainer {
 
         private final Optional<Trajectory<DifferentialSample>> trajectory = Choreo.loadTrajectory("kop");
 
-        private final DriveCmd driveJoystickCmd = new DriveCmd(driveSubsystem, driver);
+        private final DriveCmd driveJoystickCmd = new DriveCmd(driveSubsystem, controller);
         private final IntakeArmCmd IntakeArmCmd = new IntakeArmCmd(intakeArmSubsystems, controller);
 
         public RobotContainer() {
@@ -56,13 +56,17 @@ public class RobotContainer {
                                 .whileTrue(this.putterSubsytems.cmdExecuteCorrection());
 
                 this.controller.IntakelifeUp()
-                                .onTrue(this.intakeArmSubsystems.keep()
+                                .onTrue(this.intakeArmSubsystems.down()
                                                 .alongWith(this.intakeSubsystems.Cmdbackexecute()))
                                 .onFalse(this.intakeArmSubsystems.Up());
                 this.controller.IntakeLifeDown()
                                 .onTrue(this.intakeArmSubsystems.down()
                                                 .alongWith(this.intakeSubsystems.Cmdexecute()))
                                 .onFalse(this.intakeArmSubsystems.keep());
+                this.controller.getCoral()
+                                .onTrue(this.intakeArmSubsystems.coral()
+                                .alongWith(this.intakeSubsystems.Cmdexecute()))
+                                .onFalse(this.intakeArmSubsystems.Up());
         }
 
         public Command getAutonomousCommand() {

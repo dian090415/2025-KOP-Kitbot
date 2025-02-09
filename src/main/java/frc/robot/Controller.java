@@ -11,6 +11,7 @@ public class Controller extends XboxController {
     public Trigger Putter() {
         return new Trigger(this::getXButton);
     }
+
     public Trigger PutterCorrection() {
         return new Trigger(this::getYButton);
     }
@@ -28,6 +29,10 @@ public class Controller extends XboxController {
     }
 
     public Trigger AutoIntake() {
+        return new Trigger(this::getAButton);
+    }
+
+    public Trigger getCoral() {
         return new Trigger(this::getAButton);
     }
 }
