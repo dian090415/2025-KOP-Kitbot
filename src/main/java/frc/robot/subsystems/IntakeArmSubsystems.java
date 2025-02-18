@@ -28,10 +28,10 @@ public class IntakeArmSubsystems extends SubsystemBase {
     private final DutyCycleEncoder encoder = new DutyCycleEncoder(0);
     private final PIDController lifterPid = new PIDController(1.15, 0, 0); // TODO
 
-    private final double MIN_DEGREE = 0.764257944106449;
-    private final double MAX_DEGREE = 0.559715463992887;
-    private final double Keep = 0.683742067093552;
-    private final double coral = 0.918808322970208;
+    private final double MIN_DEGREE = 0.52792321319808;
+    private final double MAX_DEGREE = 0.319051807976295;
+    private final double Keep = 0.436155310903883;
+    private final double coral = 0.669453966736349;
 
     public IntakeArmSubsystems() {
         this.motor = new SparkMax(DeviceId.controller.intakearmSubsytems, MotorType.kBrushless);
