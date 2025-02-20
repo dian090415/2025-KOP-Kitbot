@@ -165,7 +165,6 @@ public class DriveSubsystem extends SubsystemBase {
         this.Right.setVoltage(rightVoltage);
 
         this.getPose();
-
         SmartDashboard.putNumber("leftVelocity", leftVelocity);
         SmartDashboard.putNumber("rightVelocityy", rightVelocity);
         SmartDashboard.putNumber("leftSetpoint", leftSetpoint);

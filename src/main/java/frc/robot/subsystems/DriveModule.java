@@ -48,7 +48,6 @@ public class DriveModule {
     public double getVelocity() {
         return this.encoder.getVelocity();
     }
-
     public void setVoltage(double speed) {
         this.motor.setVoltage(speed);
     }
